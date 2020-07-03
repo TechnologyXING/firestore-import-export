@@ -1,3 +1,4 @@
+require('dotenv').config();
 const fs = require('fs');
 const YAML = require('js-yaml');
 const admin = require("firebase-admin");
@@ -22,7 +23,7 @@ if (geoArray) {
 // You should replace databaseURL with your own
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://ionic-firestore-dn.firebaseio.com"
+  databaseURL: process.env.DB_URL
 });
 
 const db = admin.firestore();
@@ -56,46 +57,46 @@ async function updateCollection(dataArray){
 }
 
 function startUpdating(collectionName, doc, data){
-  // convert date from unixtimestamp  
+  // convert date from unixtimestamp
   let parameterValid = true;
 
   // Enter date value
-  if(typeof dateArray !== 'undefined') {        
-    dateArray.map(date => {      
+  if(typeof dateArray !== 'undefined') {
+    dateArray.map(date => {
       if (data.hasOwnProperty(date)) {
         data[date] = new Date(data[date]._seconds * 1000);
       } else {
         console.log('Please check your date parameters!!!', dateArray);
         parameterValid = false;
-      }     
-    });    
+      }
+    });
   }
 
   // Enter geo value
   if(typeof geoArray !== 'undefined') {
     geoArray.map(geo => {
-      if(data.hasOwnProperty(geo)) {        
-        data[geo] = new admin.firestore.GeoPoint(data[geo]._latitude, data[geo]._longitude);        
+      if(data.hasOwnProperty(geo)) {
+        data[geo] = new admin.firestore.GeoPoint(data[geo]._latitude, data[geo]._longitude);
       } else {
         console.log('Please check your geo parameters!!!', geoArray);
         parameterValid = false;
       }
     })
   }
-  
+
   if(parameterValid) {
     return new Promise(resolve => {
       db.collection(collectionName).doc(doc)
       .set(data)
       .then(() => {
         console.log(`${doc} is imported successfully to firestore!`);
-        resolve('Data wrote!');
+        resolve('Data written!');
       })
       .catch(error => {
         console.log(error);
       });
     });
   } else {
-    console.log(`${doc} is not imported to firestore. Please check your parameters!`);    
+    console.log(`${doc} is not imported to firestore. Please check your parameters!`);
   }
 }
