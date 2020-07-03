@@ -7,6 +7,7 @@ THIS IS A fork of [@dalenguyen/firestore-import-export](https://github.com/dalen
  - use of .env instead of hard-coded url, so there's only one place to edit.
  - fixed subCollection name when using sub collections
  - exported (downloaded) data is "prettified" using tabs, remove ```PRETTIFIED=1``` from the ```.env``` if you just want the regular JSON string.
+ - import to firebase data with subcollections
 
 # Requirements
 
@@ -47,10 +48,11 @@ node export.js <your-collection-name> <sub-collection-name-(optional)>
 
 # Import database to Firestore
 
-This will import a collection to Firestore will overwrite any documents in that collection with matching id's to those in your json. If you have date type in your JSON, please add the field to the command line. **The date and geo arguments is optional**.
+This will import a collection to Firestore will overwrite any documents in that collection with matching id's to those in your json. If you have date type in your JSON, please add the field to the command line. If you have subcollections, please indicate their field_name.
+**The date and geo arguments is optional**.
 
 ```
-node import.js import-to-firestore.json date=date geo=Location
+node import.js import-to-firestore.json subcollection=subFieldName date=date geo=Location
 ```
 
 If you have date type in your JSON, please add to your command line
@@ -98,4 +100,5 @@ Sample from __import-to-firestore.json__. "test" will be the collection name. Th
 
 Thanks to [@fed239](https://github.com/fed239), you can use YAML files instead of JSON files in order to import to firestore.
 
-*If you have any recommendation or question, please create an issue. Thanks,*
+## TODO
+ - refactor subcollection logic

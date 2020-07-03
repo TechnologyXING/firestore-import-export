@@ -6,11 +6,17 @@ const serviceAccount = require("./serviceAccountKey.json");
 
 const fileName = process.argv[2];
 
+const reSub = new RegExp(/^subcollection/);
 const reDate = new RegExp(/^date/);
 const reGeo = new RegExp(/^geo/);
 
+let subArray = process.argv.filter(item => item.match(reSub))[0];
 let dateArray = process.argv.filter(item => item.match(reDate))[0];
 let geoArray = process.argv.filter(item => item.match(reGeo))[0];
+
+if (subArray) {
+ 	 subArray = subArray.split('=')[1].split(',');
+}
 
 if (dateArray) {
  	 dateArray = dateArray.split('=')[1].split(',');
@@ -86,15 +92,61 @@ function startUpdating(collectionName, doc, data){
 
 	if(parameterValid) {
 		return new Promise(resolve => {
-			db.collection(collectionName).doc(doc)
-				.set(data)
-				.then(() => {
-						console.log(`${doc} is imported successfully to firestore!`);
+
+			if(typeof subArray !== 'undefined') { //if has sub-collection to process
+				subArray.map(subcollection => {
+					if(data.hasOwnProperty(subcollection)) {
+						// remove subcollection from data and save it in another variable
+						let subCollectionData = data[subcollection];
+						delete data[subcollection];
+
+						//add other non-subcollection fields
+						db.collection(collectionName).doc(doc)
+							.set(data)
+							.then(() => {
+									console.log(`[${collectionName}].[${doc}] is imported successfully to firestore!`);
+								})
+							.catch(error => {
+								console.log(error);
+						});
+
+						//add subcollection field
+
+						for(const sci in subCollectionData){
+							db.collection(collectionName).doc(doc)
+								.collection(subcollection).doc(sci)
+								.set(subCollectionData[sci])
+								.then(() => {
+										console.log(`[${collectionName}].[${doc}].[${subcollection}].[${sci}] is imported successfully to firestore!`);
+									})
+								.catch(error => {
+									console.log(error);
+							});
+						};
 						resolve('Data written!');
-					})
-				.catch(error => {
-					console.log(error);
-			});
+					} else {// process regularly if no subcollections given
+						db.collection(collectionName).doc(doc)
+							.set(data)
+							.then(() => {
+									console.log(`[${collectionName}].[${doc}] is imported successfully to firestore! (no sub-collections)`);
+									resolve('Data written!');
+								})
+							.catch(error => {
+								console.log(error);
+						});
+					};
+				})
+			} else { // process regularly if no subcollections given
+				db.collection(collectionName).doc(doc)
+					.set(data)
+					.then(() => {
+							console.log(`${doc} is imported successfully to firestore! (no sub-collections)`);
+							resolve('Data written!');
+						})
+					.catch(error => {
+						console.log(error);
+				});
+			};
 		});
 	} else {
 		console.log(`${doc} is not imported to firestore. Please check your parameters!`);
