@@ -1,4 +1,4 @@
-# Firestore Import Export
+# Firestore Import Export with 1-level subcollection support
 A script that help to export and import in Cloud Firestore
 
 THIS IS A fork of [@dalenguyen/firestore-import-export](https://github.com/dalenguyen/firestore-import-export)
